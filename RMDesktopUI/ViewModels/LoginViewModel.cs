@@ -12,6 +12,7 @@ namespace RMDesktopUI.ViewModels
     {
         private string _userName;
         private string _password;
+        private string _errorMessage;
         private IAPIHelper _apiHelper;
 
         public LoginViewModel(IAPIHelper apiHelper)
@@ -41,6 +42,30 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
+        public string ErrorMessage
+        {
+            get { return _errorMessage; }
+            set
+            {
+                _errorMessage = value;
+                NotifyOfPropertyChange(() => ErrorMessage);
+                NotifyOfPropertyChange(() => IsErrorVisible);
+            }
+        }
+
+        public bool IsErrorVisible
+        {
+            get
+            {
+                bool output = false;
+                if(ErrorMessage?.Length > 0)
+                {
+                    output = true;
+                }
+                return output;
+            }
+        }
+
         public bool CanLogIn
         {
             get 
@@ -59,11 +84,11 @@ namespace RMDesktopUI.ViewModels
             try
             {
                 var result = await _apiHelper.AuthenticateAsync(UserName, Password);
+                ErrorMessage = string.Empty;
             }
             catch (Exception ex)
             {
-
-                Console.Error.WriteLine(ex.Message);
+                ErrorMessage = ex.Message;
             }
         }
     }
