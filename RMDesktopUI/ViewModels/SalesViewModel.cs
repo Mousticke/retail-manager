@@ -1,4 +1,6 @@
 ﻿using Caliburn.Micro;
+using RMDesktopUI.Library.Api;
+using RMDesktopUI.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,11 +12,30 @@ namespace RMDesktopUI.ViewModels
 {
     public class SalesViewModel : Screen
     {
-        private BindingList<string> _products;
-        private string _itemQuantity;
-        private BindingList<string> _cart;
+        private BindingList<ProductModel> _products;
+        private ProductModel _selectedProduct;
+        private int _itemQuantity = 1;
+        private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
+        private IProductEndpoint _productEndpoint;
 
-        public BindingList<string> Products
+        public SalesViewModel(IProductEndpoint productEndpoint)
+        {
+            _productEndpoint = productEndpoint;
+        }
+
+        protected override async void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
+            await LoadProducts();
+        }
+
+        private async Task LoadProducts()
+        {
+            var prods = await _productEndpoint.GetAll();
+            Products = new BindingList<ProductModel>(prods);
+        }
+
+        public BindingList<ProductModel> Products
         {
             get { return _products; }
             set 
@@ -24,7 +45,19 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
-        public BindingList<string> Cart
+        public ProductModel SelectedProduct
+        {
+            get { return _selectedProduct; }
+            set 
+            { 
+                _selectedProduct = value;
+                NotifyOfPropertyChange(() => SelectedProduct);
+                NotifyOfPropertyChange(() => CanAddToCart);
+            }
+        }
+
+
+        public BindingList<CartItemModel> Cart
         {
             get { return _cart; }
             set 
@@ -34,13 +67,14 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
-        public string ItemQuantity
+        public int ItemQuantity
         {
             get { return _itemQuantity; }
             set 
             { 
                 _itemQuantity = value;
                 NotifyOfPropertyChange(() => ItemQuantity);
+                NotifyOfPropertyChange(() => CanAddToCart);
             }
         }
 
@@ -48,8 +82,12 @@ namespace RMDesktopUI.ViewModels
         { 
             get
             {
-                // TODO : Replace with calculation
-                return "$0.00";
+                decimal subTot = 0;
+                foreach (var item in Cart)
+                {
+                    subTot += (item.Product.RetailPrice * item.QuantityInCart);
+                }
+                return subTot.ToString("C"); //C → convert into currency
             }
         }
 
@@ -76,9 +114,13 @@ namespace RMDesktopUI.ViewModels
             get
             {
                 bool output = false;
-                
+
                 // Make sure something is selected
                 // Make sure there is an item quantity
+                if (ItemQuantity > 0 && SelectedProduct?.QuantityInStock >= ItemQuantity)
+                {
+                    output = true;
+                }
 
                 return output;
             }
@@ -111,12 +153,32 @@ namespace RMDesktopUI.ViewModels
 
         public void AddToCart()
         {
+            CartItemModel existItem = Cart.FirstOrDefault(x => x.Product == SelectedProduct);
 
+            if (existItem != null)
+            {
+                existItem.QuantityInCart += ItemQuantity;
+                Cart.Remove(existItem);
+                Cart.Add(existItem);
+            }
+            else
+            {
+                CartItemModel item = new CartItemModel
+                {
+                    Product = SelectedProduct,
+                    QuantityInCart = ItemQuantity
+                };
+                Cart.Add(item);
+            }
+
+            SelectedProduct.QuantityInStock -= ItemQuantity;
+            ItemQuantity = 1;
+            NotifyOfPropertyChange(() => SubTotal);
         }
 
         public void RemoveFromCart()
         {
-
+            NotifyOfPropertyChange(() => SubTotal);
         }
 
         public void CheckOut()

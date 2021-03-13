@@ -1,4 +1,5 @@
 ﻿using Caliburn.Micro;
+using RMDesktopUI.EventModels;
 using RMDesktopUI.Helpers;
 using RMDesktopUI.Library.Api;
 using System;
@@ -15,10 +16,12 @@ namespace RMDesktopUI.ViewModels
         private string _password;
         private string _errorMessage;
         private IAPIHelper _apiHelper;
+        private IEventAggregator _events;
 
-        public LoginViewModel(IAPIHelper apiHelper)
+        public LoginViewModel(IAPIHelper apiHelper, IEventAggregator events)
         {
             _apiHelper = apiHelper;
+            _events = events;
         }
 
         public string UserName
@@ -89,6 +92,8 @@ namespace RMDesktopUI.ViewModels
                 await _apiHelper.GetLoggedInUserInfoAsync(result.Access_token);
                 // Collapse the error message if any. That means, everything went well.
                 ErrorMessage = string.Empty;
+
+                _events.PublishOnUIThread(new LogOnEvent());
             }
             catch (Exception ex)
             {
