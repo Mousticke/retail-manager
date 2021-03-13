@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using RMDesktopUI.Library.Api;
+using RMDesktopUI.Library.Helpers;
 using RMDesktopUI.Library.Models;
 using System;
 using System.Collections.Generic;
@@ -17,10 +18,12 @@ namespace RMDesktopUI.ViewModels
         private int _itemQuantity = 1;
         private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
         private IProductEndpoint _productEndpoint;
+        private IConfigHelper _configHelper;
 
-        public SalesViewModel(IProductEndpoint productEndpoint)
+        public SalesViewModel(IProductEndpoint productEndpoint, IConfigHelper configHelper)
         {
             _productEndpoint = productEndpoint;
+            _configHelper = configHelper;
         }
 
         protected override async void OnViewLoaded(object view)
@@ -82,12 +85,7 @@ namespace RMDesktopUI.ViewModels
         { 
             get
             {
-                decimal subTot = 0;
-                foreach (var item in Cart)
-                {
-                    subTot += (item.Product.RetailPrice * item.QuantityInCart);
-                }
-                return subTot.ToString("C"); //C → convert into currency
+                return CalculateSubTotal().ToString("C"); //C → convert into currency
             }
         }
 
@@ -95,8 +93,8 @@ namespace RMDesktopUI.ViewModels
         {
             get
             {
-                // TODO : Replace with calculation
-                return "$0.00";
+               
+                return CalculateTax().ToString("C");
             }
         }
 
@@ -104,8 +102,8 @@ namespace RMDesktopUI.ViewModels
         {
             get
             {
-                // TODO : Replace with calculation
-                return "$0.00";
+                decimal total = CalculateSubTotal() + CalculateTax();
+                return total.ToString("C");
             }
         }
 
@@ -174,16 +172,45 @@ namespace RMDesktopUI.ViewModels
             SelectedProduct.QuantityInStock -= ItemQuantity;
             ItemQuantity = 1;
             NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
         }
 
         public void RemoveFromCart()
         {
             NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
         }
 
         public void CheckOut()
         {
 
+        }
+
+        private decimal CalculateSubTotal()
+        {
+            decimal subTot = 0;
+            foreach (var item in Cart)
+            {
+                subTot += (item.Product.RetailPrice * item.QuantityInCart);
+            }
+            return subTot;
+        }
+
+        private decimal CalculateTax()
+        {
+            decimal taxAmount = 0;
+            decimal taxRate = _configHelper.GetTaxRate()/100;
+            foreach (var item in Cart)
+            {
+                if (item.Product.IsTaxable)
+                {
+                    taxAmount += (item.Product.RetailPrice * item.QuantityInCart * taxRate);
+                }
+
+            }
+            return taxAmount;
         }
     }
 }
