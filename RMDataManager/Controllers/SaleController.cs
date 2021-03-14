@@ -14,11 +14,12 @@ namespace RMDataManager.Controllers
     [Authorize]
     public class SaleController : ApiController
     {
-        //public IEnumerable<ProductModel> Get()
-        //{
-        //    ProductData data = new ProductData();
-        //    return data.GetProducts();
-        //}
+        [Route("GetSalesReport")]
+        public IEnumerable<SaleReportModel> GetSalesReport()
+        {
+            SaleData data = new SaleData();
+            return data.GetSaleReport();
+        }
 
         public void Post(SaleModel sale)
         {
