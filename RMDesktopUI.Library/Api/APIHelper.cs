@@ -61,6 +61,11 @@ namespace RMDesktopUI.Library.Api
             }
         }
 
+        public void LogOffUser()
+        {
+            _apiClient.DefaultRequestHeaders.Clear();
+        }
+
         public async Task GetLoggedInUserInfoAsync(string token)
         {
             _apiClient.DefaultRequestHeaders.Clear();
