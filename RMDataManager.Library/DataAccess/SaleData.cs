@@ -60,7 +60,7 @@ namespace RMDataManager.Library.DataAccess
             foreach (var item in details)
             {
                 item.SaleId = sale.Id;
-                sql.SaveData("dbo.spSaleDetailInsert", details, "RMData");
+                sql.SaveData("dbo.spSaleDetailInsert", item, "RMData");
             }
             
         }
