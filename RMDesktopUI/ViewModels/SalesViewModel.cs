@@ -38,14 +38,7 @@ namespace RMDesktopUI.ViewModels
         {
             base.OnViewLoaded(view);
             await LoadProducts();
-        }
-
-        private async Task LoadProducts()
-        {
-            var prods = await _productEndpoint.GetAll();
-            var productsMap = _mapper.Map<List<ProductDisplayModel>>(prods);
-            Products = new BindingList<ProductDisplayModel>(productsMap);
-        }
+        }  
 
         public BindingList<ProductDisplayModel> Products
         {
@@ -151,7 +144,7 @@ namespace RMDesktopUI.ViewModels
 
                 // Make sure something is selected
                 // Make sure there is an item quantity
-                if (SelectedCartItem != null && SelectedCartItem?.Product.QuantityInStock > 0)
+                if (SelectedCartItem != null && SelectedCartItem?.QuantityInCart > 0)
                 {
                     output = true;
                 }
@@ -218,6 +211,7 @@ namespace RMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
             NotifyOfPropertyChange(() => CanCheckOut);
+            NotifyOfPropertyChange(() => CanAddToCart);
         }
 
         public async Task CheckOut()
@@ -233,6 +227,7 @@ namespace RMDesktopUI.ViewModels
             }
 
             await _saleEndpoint.Post(sale);
+            await ResetSalesViewModel();
         }
 
         private decimal CalculateSubTotal()
@@ -252,6 +247,23 @@ namespace RMDesktopUI.ViewModels
                 .Sum(x => x.Product.RetailPrice * x.QuantityInCart * taxRate);
 
             return taxAmount;
+        }
+
+        private async Task LoadProducts()
+        {
+            var prods = await _productEndpoint.GetAll();
+            var productsMap = _mapper.Map<List<ProductDisplayModel>>(prods);
+            Products = new BindingList<ProductDisplayModel>(productsMap);
+        }
+
+        private async Task ResetSalesViewModel()
+        {
+            Cart = new BindingList<CartItemDisplayModel>();
+            await LoadProducts();
+            NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanCheckOut);
         }
     }
 }
