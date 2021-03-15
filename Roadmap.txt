@@ -1,0 +1,18 @@
+
+Application Ideas:
+* Interact with the inventory
+* Move the API to Azure
+* CI/CD Process
+* Deploy the Desktop App to Blob storage from download
+* Introduce a web-based inventory control system (Blazor)
+* Web based reporting
+* Xamarin forms app for a mobile register
+
+Phase 2 Roadmap
+1. Take advantage of .NET Core
+2. Set up a simple task board in Azure DevOps
+3. CI/CD with Azure DevOps
+4. Move the API to Azure
+5. Move database to Azure Blob storage
+6. Deploy the desktop app ti Azure Blob Storage
+7. Web-based inventory control system
