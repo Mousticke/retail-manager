@@ -71,7 +71,7 @@ namespace RMDataManager.Library.DataAccess
 
                     sql.CommitTransaction();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     sql.RollbackTransaction();
                     throw;
