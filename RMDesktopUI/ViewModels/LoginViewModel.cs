@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RMDesktopUI.ViewModels
@@ -93,7 +94,7 @@ namespace RMDesktopUI.ViewModels
                 // Collapse the error message if any. That means, everything went well.
                 ErrorMessage = string.Empty;
 
-                _events.PublishOnUIThread(new LogOnEvent());
+                await _events.PublishOnUIThreadAsync(new LogOnEvent(), new CancellationToken());
             }
             catch (Exception ex)
             {
