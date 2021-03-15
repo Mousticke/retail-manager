@@ -52,6 +52,11 @@ namespace RMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => IsLoggedIn);
         }
 
+        public void UserManagement()
+        {
+            ActivateItem(IoC.Get<UserDisplayViewModel>());
+        }
+
         public void ExitApplication()
         {
             TryClose();
