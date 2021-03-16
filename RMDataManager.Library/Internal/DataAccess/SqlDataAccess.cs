@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace RMDataManager.Library.Internal.DataAccess
 {
-    internal class SqlDataAccess : IDisposable
+    public class SqlDataAccess : IDisposable, ISqlDataAccess
     {
         private IDbConnection _connection;
         private IDbTransaction _transaction;
@@ -32,7 +32,7 @@ namespace RMDataManager.Library.Internal.DataAccess
             string connectionString = GetConnectionString(connectionStringName);
             using (IDbConnection cnn = new SqlConnection(connectionString))
             {
-                List<T> rows = cnn.Query<T>(storedProcedure, parameters, 
+                List<T> rows = cnn.Query<T>(storedProcedure, parameters,
                     commandType: CommandType.StoredProcedure).ToList();
 
                 return rows;
@@ -44,15 +44,15 @@ namespace RMDataManager.Library.Internal.DataAccess
             string connectionString = GetConnectionString(connectionStringName);
             using (IDbConnection cnn = new SqlConnection(connectionString))
             {
-                cnn.Execute(storedProcedure, parameters, 
+                cnn.Execute(storedProcedure, parameters,
                     commandType: CommandType.StoredProcedure);
             }
         }
 
         public void SaveDataInTransaction<T>(string storedProcedure, T parameters)
-        {  
+        {
             _connection.Execute(storedProcedure, parameters,
-                commandType: CommandType.StoredProcedure, transaction: _transaction); 
+                commandType: CommandType.StoredProcedure, transaction: _transaction);
         }
 
         public List<T> LoadDataInTransaction<T, U>(string storedProcedure, U parameters)
@@ -88,7 +88,7 @@ namespace RMDataManager.Library.Internal.DataAccess
 
         void IDisposable.Dispose()
         {
-            if(_isClosed == false)
+            if (_isClosed == false)
             {
                 try
                 {
